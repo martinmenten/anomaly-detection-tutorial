@@ -1,0 +1,6 @@
+# Hidden files
+.DS_Store
+
+# Dataset
+/data/MedNIST/
+/data/MedNIST.tar.gz
