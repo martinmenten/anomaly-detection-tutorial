@@ -4,3 +4,7 @@
 # Dataset
 /data/MedNIST/
 /data/MedNIST.tar.gz
+
+# Annoying directories
+__pycache__/
+.ipynb_checkpoints/

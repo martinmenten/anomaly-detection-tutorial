@@ -65,6 +65,35 @@ class MedNISTDataset(Dataset):
         return image
 
 
+
+class MedNISTTestDataset(Dataset):
+    """
+    Dataset class for the MedNIST dataset.
+    """
+
+    def __init__(self, files: List, labels: List):
+        """
+        :param files: List of files to load.
+        :param labels: List of labels for each file.
+        """
+        self.files = files
+        self.labels = labels
+
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self, idx):
+        """
+        :param idx: Index of the file to load.
+        :return: A tuple containing the loaded image and its label.
+        """
+        image = Image.open(self.files[idx])
+        image = image.convert('L')
+        image = transforms.ToTensor()(image)
+        label = self.labels[idx]
+        return (image, label)
+
+
 if __name__ == '__main__':
     # download the dataset
     download_mednist(MEDNISTDIR)
