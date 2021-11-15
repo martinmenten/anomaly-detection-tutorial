@@ -9,6 +9,7 @@ from torchvision import transforms
 
 
 MEDNISTDIR = os.path.join(os.path.dirname(__file__), 'data')
+MEDNISTCLASSES = ['AbdomenCT', 'BreastMRI', 'ChestCT', 'CXR', 'Hand', 'HeadCT']
 
 
 def download_mednist(data_dir: str) -> None:
@@ -38,6 +39,24 @@ def get_mednist_files(data_dir: str, classname: str) -> List:
     Get a list of all files in the given class.
     """
     return glob(os.path.join(data_dir, 'MedNIST', classname, '*.jpeg'))
+
+
+def get_normal_files(data_dir: str, normal_class: str) -> List:
+    """
+    Get a list of all files considered normal.
+    """
+    return get_mednist_files(data_dir, normal_class)
+
+
+def get_anomal_files(data_dir: str, normal_class: str) -> List:
+    """
+    Get a list of files that don't belong to the normal class.
+    """
+    files = []
+    for classname in MEDNISTCLASSES:
+        if classname != normal_class:
+            files += get_mednist_files(data_dir, classname)
+    return files
 
 
 class MedNISTDataset(Dataset):
