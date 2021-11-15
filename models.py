@@ -150,7 +150,7 @@ class VAE(nn.Module):
         return unit_gaussian * std + mu
 
     def loss_function(self, x: Tensor, y: Tensor, mu: Tensor, logvar: Tensor,
-                      kl_weight: float):
+                      kl_weight: float = 1.0) -> dict:
         """
         Computes the VAE loss function.
         KL(N(\mu, \sigma), N(0, 1)) = \log \frac{1}{\sigma} + \frac{\sigma^2 + \mu^2}{2} - \frac{1}{2}
@@ -163,9 +163,21 @@ class VAE(nn.Module):
         recon_loss = torch.mean((x - y) ** 2)
         kl_loss = torch.mean(-0.5 * torch.sum(1 + logvar - mu ** 2 - logvar.exp(), dim=1), dim=0)
         loss = recon_loss + kl_weight * kl_loss
-        return loss, recon_loss, kl_loss
+        return {
+            'loss': loss,
+            'recon_loss': recon_loss,
+            'kl_loss': kl_loss,
+        }
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def anomaly_score(self, x: Tensor) -> Tensor:
+        """
+        Computes the anomaly score (kl-divergence)
+        """
+        res = self.encoder(x)
+        mu, logvar = torch.chunk(self.bottleneck(res), 2, dim=1)
+        return -0.5 * torch.sum(1 + logvar - mu ** 2 - logvar.exp(), dim=1)
+
+    def forward(self, x: Tensor) -> Tensor:
         # Encode
         res = self.encoder(x)
         # Bottleneck

@@ -24,3 +24,15 @@ def plot(imgs: List[np.array], titles: List[str] = None, show: bool = True):
         plt.show()
     else:
         return fig
+
+
+def plot_anomaly_scores(scores: np.ndarray, labels: np.ndarray):
+    """Plot a histogram of the anomaly scores"""
+    normal_scores = scores[np.where(labels == 0)]
+    anomal_scores = scores[np.where(labels == 1)]
+    plt.hist(normal_scores, bins=100, alpha=0.5, label='normal', color='b')
+    plt.hist(anomal_scores[np.where(anomal_scores < 1.)], bins=100, alpha=0.5, label='anomal', color='r')
+    plt.xlabel('anomaly score')
+    plt.ylabel('count')
+    plt.legend()
+    plt.show()
