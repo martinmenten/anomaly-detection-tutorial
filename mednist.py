@@ -84,7 +84,6 @@ class MedNISTDataset(Dataset):
         return image
 
 
-
 class MedNISTTestDataset(Dataset):
     """
     Dataset class for the MedNIST dataset.

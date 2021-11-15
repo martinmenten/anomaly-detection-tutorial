@@ -55,7 +55,8 @@ def build_decoder(out_channels: int, num_layers: int, width: int) -> nn.Module:
     # Final layer
     decoder.append(
         nn.Sequential(
-            nn.ConvTranspose2d(hidden_dims[0], 1, kernel_size=3, padding=1),
+            nn.ConvTranspose2d(hidden_dims[0], 1, kernel_size=3, padding=1,
+                               bias=False),
             nn.Sigmoid(),
         )
     )
@@ -150,7 +151,7 @@ class VAE(nn.Module):
         return unit_gaussian * std + mu
 
     def loss_function(self, x: Tensor, y: Tensor, mu: Tensor, logvar: Tensor,
-                      kl_weight: float = 1.0) -> dict:
+                      kl_weight = 2.) -> dict:
         """
         Computes the VAE loss function.
         KL(N(\mu, \sigma), N(0, 1)) = \log \frac{1}{\sigma} + \frac{\sigma^2 + \mu^2}{2} - \frac{1}{2}
@@ -158,10 +159,10 @@ class VAE(nn.Module):
         :param y: Reconstructed image
         :param mu: Mean of the estimated latent Gaussian
         :param logvar: Standard deviation of the estimated latent Gaussian
-        :param kl_weight: Account for the minibatch size from the dataset
+        :param kl_weight: Weight of the KL divergence
         """
         recon_loss = torch.mean((x - y) ** 2)
-        kl_loss = torch.mean(-0.5 * torch.sum(1 + logvar - mu ** 2 - logvar.exp(), dim=1), dim=0)
+        kl_loss = torch.mean(-0.5 * torch.mean(1 + logvar - mu ** 2 - logvar.exp(), dim=1), dim=0)
         loss = recon_loss + kl_weight * kl_loss
         return {
             'loss': loss,
@@ -175,7 +176,7 @@ class VAE(nn.Module):
         """
         res = self.encoder(x)
         mu, logvar = torch.chunk(self.bottleneck(res), 2, dim=1)
-        return -0.5 * torch.sum(1 + logvar - mu ** 2 - logvar.exp(), dim=1)
+        return -0.5 * torch.mean(1 + logvar - mu ** 2 - logvar.exp(), dim=1)
 
     def forward(self, x: Tensor) -> Tensor:
         # Encode
