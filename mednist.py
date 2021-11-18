@@ -14,8 +14,8 @@ MEDNISTCLASSES = ['AbdomenCT', 'BreastMRI', 'ChestCT', 'CXR', 'Hand', 'HeadCT']
 
 def download_mednist(data_dir: str) -> None:
     """
-    Download the MNIST dataset from the internet and save it to the given
-    directory.
+    Download the MNIST dataset from the a Dropbox link provided by the MONAI
+    project and save it to the given directory.
     """
     # Create data_dir if it does not exist
     os.makedirs(data_dir, exist_ok=True)
