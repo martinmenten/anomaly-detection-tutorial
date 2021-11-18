@@ -54,11 +54,7 @@ def build_decoder(out_channels: int, num_layers: int, width: int) -> nn.Module:
     )
     # Final layer
     decoder.append(
-        nn.Sequential(
-            nn.ConvTranspose2d(hidden_dims[0], 1, kernel_size=3, padding=1,
-                               bias=False),
-            nn.Sigmoid(),
-        )
+        nn.Conv2d(hidden_dims[0], out_channels, kernel_size=1, bias=False)
     )
     return nn.Sequential(*decoder)
 
