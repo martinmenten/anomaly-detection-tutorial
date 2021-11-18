@@ -84,10 +84,10 @@ class Autoencoder(nn.Module):
         # Bottleneck
         self.bottleneck = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(intermediate_feats, latent_dim),
+            nn.Linear(intermediate_feats, latent_dim, bias=False),
         )
         self.decoder_input = nn.Sequential(
-            nn.Linear(latent_dim, intermediate_feats),
+            nn.Linear(latent_dim, intermediate_feats, bias=False),
             Reshape((-1, hidden_dims[-1], intermediate_res, intermediate_res)),
         )
 
@@ -130,10 +130,10 @@ class VAE(nn.Module):
         # Bottleneck
         self.bottleneck = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(intermediate_feats, latent_dim * 2),
+            nn.Linear(intermediate_feats, latent_dim * 2, bias=False),
         )
         self.decoder_input = nn.Sequential(
-            nn.Linear(latent_dim, intermediate_feats),
+            nn.Linear(latent_dim, intermediate_feats, bias=False),
             Reshape((-1, hidden_dims[-1], intermediate_res, intermediate_res)),
         )
 
@@ -151,7 +151,7 @@ class VAE(nn.Module):
         return unit_gaussian * std + mu
 
     def loss_function(self, x: Tensor, y: Tensor, mu: Tensor, logvar: Tensor,
-                      kl_weight = 2.) -> dict:
+                      kl_weight=1.) -> dict:
         """
         Computes the VAE loss function.
         KL(N(\mu, \sigma), N(0, 1)) = \log \frac{1}{\sigma} + \frac{\sigma^2 + \mu^2}{2} - \frac{1}{2}
@@ -162,7 +162,7 @@ class VAE(nn.Module):
         :param kl_weight: Weight of the KL divergence
         """
         recon_loss = torch.mean((x - y) ** 2)
-        kl_loss = torch.mean(-0.5 * torch.mean(1 + logvar - mu ** 2 - logvar.exp(), dim=1), dim=0)
+        kl_loss = torch.mean(-0.5 * (1 + logvar - mu ** 2 - logvar.exp()))
         loss = recon_loss + kl_weight * kl_loss
         return {
             'loss': loss,
@@ -176,7 +176,7 @@ class VAE(nn.Module):
         """
         res = self.encoder(x)
         mu, logvar = torch.chunk(self.bottleneck(res), 2, dim=1)
-        return -0.5 * torch.mean(1 + logvar - mu ** 2 - logvar.exp(), dim=1)
+        return torch.mean(-0.5 * (1 + logvar - mu ** 2 - logvar.exp()), dim=1)
 
     def forward(self, x: Tensor) -> Tensor:
         # Encode
